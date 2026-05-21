@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VoiceBrief — Email to 1-Line Summary</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink: #0f0e0d;
+      --ink-2: #4a4845;
+      --ink-3: #8a8784;
+      --surface: #faf8f5;
+      --surface-2: #f0ede8;
+      --surface-3: #e4e0d9;
+      --accent: #c8471a;
+      --accent-light: #f5e8e3;
+      --accent-dark: #9c3210;
+      --white: #ffffff;
+      --radius: 14px;
+      --shadow: 0 2px 12px rgba(15,14,13,0.08), 0 1px 3px rgba(15,14,13,0.04);
+      --shadow-lg: 0 8px 40px rgba(15,14,13,0.12), 0 2px 8px rgba(15,14,13,0.06);
+    }
+
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: var(--surface);
+      color: var(--ink);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 2rem 2rem 0;
+      max-width: 780px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--accent);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo-icon svg {
+      width: 18px;
+      height: 18px;
+      fill: white;
+    }
+
+    .logo-text {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: 20px;
+      color: var(--ink);
+      letter-spacing: -0.02em;
+    }
+
+    main {
+      flex: 1;
+      max-width: 780px;
+      margin: 0 auto;
+      width: 100%;
+      padding: 3rem 2rem 4rem;
+    }
+
+    .hero {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .hero h1 {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      color: var(--ink);
+      margin-bottom: 1rem;
+    }
+
+    .hero h1 em {
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    .hero p {
+      font-size: 1.05rem;
+      color: var(--ink-2);
+      font-weight: 300;
+      line-height: 1.6;
+    }
+
+    .card {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .input-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--ink-2);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .char-count {
+      font-weight: 400;
+      color: var(--ink-3);
+      letter-spacing: 0;
+      text-transform: none;
+      font-size: 12px;
+    }
+
+    .char-count.warn { color: var(--accent); }
+
+    textarea {
+      width: 100%;
+      min-height: 220px;
+      border: 1.5px solid var(--surface-3);
+      border-radius: 10px;
+      padding: 1rem 1.1rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      line-height: 1.65;
+      color: var(--ink);
+      background: var(--surface);
+      resize: vertical;
+      transition: border-color 0.15s, background 0.15s;
+      outline: none;
+    }
+
+    textarea::placeholder { color: var(--ink-3); }
+
+    textarea:focus {
+      border-color: var(--accent);
+      background: var(--white);
+    }
+
+    .actions {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 1.25rem;
+      align-items: center;
+    }
+
+    .btn-primary {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 0.75rem 1.75rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+      flex-shrink: 0;
+    }
+
+    .btn-primary:hover { background: var(--accent-dark); }
+    .btn-primary:active { transform: scale(0.98); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-ghost {
+      background: none;
+      color: var(--ink-3);
+      border: 1.5px solid var(--surface-3);
+      border-radius: 10px;
+      padding: 0.75rem 1.25rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .btn-ghost:hover { border-color: var(--ink-3); color: var(--ink); }
+
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .result-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-lg);
+      padding: 2rem;
+      display: none;
+      border-left: 4px solid var(--accent);
+      animation: slideUp 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 1rem;
+    }
+
+    .result-badge {
+      background: var(--accent-light);
+      color: var(--accent-dark);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+
+    .voice-icon {
+      margin-left: auto;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--accent-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+      border: none;
+      flex-shrink: 0;
+    }
+
+    .voice-icon:hover { background: var(--surface-3); transform: scale(1.05); }
+    .voice-icon.speaking { background: var(--accent); }
+    .voice-icon.speaking svg path { fill: white; }
+
+    .voice-icon svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .summary-text {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: clamp(1.2rem, 3vw, 1.6rem);
+      line-height: 1.4;
+      color: var(--ink);
+      letter-spacing: -0.02em;
+      margin-bottom: 1.25rem;
+    }
+
+    .result-footer {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--surface-2);
+    }
+
+    .meta-pill {
+      background: var(--surface-2);
+      color: var(--ink-2);
+      font-size: 12px;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+
+    .copy-btn {
+      margin-left: auto;
+      background: none;
+      border: 1.5px solid var(--surface-3);
+      border-radius: 8px;
+      padding: 5px 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      color: var(--ink-2);
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .copy-btn:hover { border-color: var(--ink-3); color: var(--ink); }
+    .copy-btn.copied { border-color: #2e7d32; color: #2e7d32; }
+
+    .error-card {
+      background: #fff5f5;
+      border: 1.5px solid #ffd5d5;
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      color: #c62828;
+      font-size: 0.9rem;
+      display: none;
+      animation: slideUp 0.3s ease;
+    }
+
+    .how-it-works {
+      margin-top: 3rem;
+      text-align: center;
+    }
+
+    .how-it-works h2 {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: 1.4rem;
+      margin-bottom: 1.5rem;
+      color: var(--ink-2);
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+
+    .step {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      box-shadow: var(--shadow);
+    }
+
+    .step-num {
+      width: 28px;
+      height: 28px;
+      background: var(--accent-light);
+      color: var(--accent-dark);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 500;
+      margin: 0 auto 0.75rem;
+    }
+
+    .step h3 {
+      font-size: 0.9rem;
+      font-weight: 500;
+      margin-bottom: 0.4rem;
+    }
+
+    .step p {
+      font-size: 0.82rem;
+      color: var(--ink-3);
+      line-height: 1.5;
+    }
+
+    footer {
+      text-align: center;
+      padding: 1.5rem;
+      color: var(--ink-3);
+      font-size: 12px;
+      border-top: 1px solid var(--surface-2);
+    }
+
+    @media (max-width: 560px) {
+      main { padding: 2rem 1rem 3rem; }
+      .steps { grid-template-columns: 1fr; }
+      .actions { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2a4 4 0 0 1 4 4v6a4 4 0 0 1-8 0V6a4 4 0 0 1 4-4zm0 14a7 7 0 0 0 7-7H21a9 9 0 0 1-8 8.94V21h-2v-3.06A9 9 0 0 1 3 9h2a7 7 0 0 0 7 7z"/>
+      </svg>
+    </div>
+    <span class="logo-text">VoiceBrief</span>
+  </div>
+</header>
+
+<main>
+  <div class="hero">
+    <h1>Long email →<br><em>one spoken line</em></h1>
+    <p>Paste any email. Get one voice-ready sentence that captures everything that matters.</p>
+  </div>
+
+  <div class="card">
+    <div class="input-label">
+      Paste your email
+      <span class="char-count" id="charCount">0 / 15,000 chars</span>
+    </div>
+    <textarea
+      id="emailInput"
+      placeholder="Dear team, I wanted to follow up on our discussion from last week's meeting regarding the Q3 budget allocations..."
+      spellcheck="false"
+    ></textarea>
+    <div class="actions">
+      <button class="btn-primary" id="summarizeBtn" onclick="summarize()">
+        <span id="btnLabel">Summarize</span>
+        <div class="spinner" id="spinner"></div>
+      </button>
+      <button class="btn-ghost" onclick="clearAll()">Clear</button>
+    </div>
+  </div>
+
+  <div class="error-card" id="errorCard"></div>
+
+  <div class="result-card" id="resultCard">
+    <div class="result-header">
+      <span class="result-badge">Voice Summary</span>
+      <button class="voice-icon" id="speakBtn" onclick="speakSummary()" title="Read aloud">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2a4 4 0 0 1 4 4v6a4 4 0 0 1-8 0V6a4 4 0 0 1 4-4z" fill="currentColor" stroke="none"/>
+          <path d="M19 10a7 7 0 0 1-14 0M12 19v3M8 22h8" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+    <div class="summary-text" id="summaryText"></div>
+    <div class="result-footer">
+      <span class="meta-pill" id="wordsMeta"></span>
+      <span class="meta-pill" id="modelMeta"></span>
+      <button class="copy-btn" id="copyBtn" onclick="copySummary()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        Copy
+      </button>
+    </div>
+  </div>
+
+  <div class="how-it-works">
+    <h2>How it works</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <h3>Paste the email</h3>
+        <p>Drop in any email — short or sprawling, formal or casual.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <h3>AI distills it</h3>
+        <p>Groq's LLaMA 3.3 extracts the single most important point.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <h3>Hear it aloud</h3>
+        <p>One natural sentence, ready to speak or share.</p>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  Powered by Groq · LLaMA 3.3 70B · Built for speed
+</footer>
+
+<script>
+  const textarea = document.getElementById('emailInput');
+  const charCount = document.getElementById('charCount');
+
+  textarea.addEventListener('input', () => {
+    const len = textarea.value.length;
+    charCount.textContent = `${len.toLocaleString()} / 15,000 chars`;
+    charCount.className = 'char-count' + (len > 12000 ? ' warn' : '');
+  });
+
+  async function summarize() {
+    const email = textarea.value.trim();
+    if (!email) { showError('Please paste an email first.'); return; }
+
+    setLoading(true);
+    hideError();
+    document.getElementById('resultCard').style.display = 'none';
+
+    try {
+      const res = await fetch('/summarize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error || 'Something went wrong');
+
+      showResult(data);
+    } catch (err) {
+      showError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function showResult(data) {
+    const words = data.summary.split(/\s+/).length;
+    document.getElementById('summaryText').textContent = data.summary;
+    document.getElementById('wordsMeta').textContent = `${words} words`;
+    document.getElementById('modelMeta').textContent = 'LLaMA 3.3 70B';
+    document.getElementById('copyBtn').textContent = 'Copy';
+    document.getElementById('copyBtn').className = 'copy-btn';
+
+    const card = document.getElementById('resultCard');
+    card.style.display = 'block';
+    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function setLoading(on) {
+    const btn = document.getElementById('summarizeBtn');
+    const label = document.getElementById('btnLabel');
+    const spinner = document.getElementById('spinner');
+    btn.disabled = on;
+    label.textContent = on ? 'Summarizing…' : 'Summarize';
+    spinner.style.display = on ? 'block' : 'none';
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('errorCard');
+    el.textContent = '⚠ ' + msg;
+    el.style.display = 'block';
+  }
+
+  function hideError() {
+    document.getElementById('errorCard').style.display = 'none';
+  }
+
+  function clearAll() {
+    textarea.value = '';
+    charCount.textContent = '0 / 15,000 chars';
+    charCount.className = 'char-count';
+    document.getElementById('resultCard').style.display = 'none';
+    hideError();
+    window.speechSynthesis?.cancel();
+  }
+
+  async function copySummary() {
+    const text = document.getElementById('summaryText').textContent;
+    try {
+      await navigator.clipboard.writeText(text);
+      const btn = document.getElementById('copyBtn');
+      btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Copied!`;
+      btn.className = 'copy-btn copied';
+      setTimeout(() => {
+        btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy`;
+        btn.className = 'copy-btn';
+      }, 2000);
+    } catch {}
+  }
+
+  let speaking = false;
+  function speakSummary() {
+    const text = document.getElementById('summaryText').textContent;
+    const btn = document.getElementById('speakBtn');
+    if (!text || !window.speechSynthesis) return;
+
+    if (speaking) {
+      window.speechSynthesis.cancel();
+      speaking = false;
+      btn.className = 'voice-icon';
+      return;
+    }
+
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.rate = 0.95;
+    utter.pitch = 1;
+    utter.onend = () => { speaking = false; btn.className = 'voice-icon'; };
+    utter.onerror = () => { speaking = false; btn.className = 'voice-icon'; };
+    speaking = true;
+    btn.className = 'voice-icon speaking';
+    window.speechSynthesis.speak(utter);
+  }
+
+  textarea.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') summarize();
+  });
+</script>
+</body>
+</html>
